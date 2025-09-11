@@ -8,7 +8,7 @@ from service import ContentModerationService, ModerationRequest, ModerationRespo
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Content Moderation API", version="1.0.0")
+app = FastAPI(title="Content Moderation API", version="0.0.1")
 
 moderation_service = ContentModerationService()
 
