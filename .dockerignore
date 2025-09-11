@@ -13,3 +13,5 @@ wheels/
 # Git files
 .git
 .gitignore
+
+*.png

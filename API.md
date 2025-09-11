@@ -11,11 +11,13 @@ This API flags abusive/harmful text content using a 3-step flow:
 
 Responses are shaped consistently with a `meta` object, a `should_moderate` flag, a `reason` enum, and an HTTP `status_code` echoed in the body.
 
+![Flowchart](assets/flowchart.png)
+
 ---
 
 ### Endpoints
 
-#### 2) POST `/moderate`
+#### 1) POST `/moderate`
 - **Description**: Runs the content moderation flow on the provided text.
 - **Request Body**:
 ```json
@@ -25,14 +27,14 @@ Responses are shaped consistently with a `meta` object, a `should_moderate` flag
 ```
 
 - **Response Body (Success/Handled Error)**:
-```json
+```
 {
   "meta": {
     "response_time": 12.34,
     "flagged_words": ["string"]
   },
-  "should_moderate": true,
-  "reason": "safe | tattle_slur_list | llama_guard | flag_list",
+  "should_moderate": true || false,
+  "reason": "safe" | "tattle_slur_list" | "llama_guard" | "flag_list",
   "status_code": 200
 }
 ```
@@ -92,7 +94,7 @@ Example:
 Request:
 ```bash
 curl -X POST \
-  http://localhost:8000/moderate \
+  https://api-endpoint/moderate \
   -H 'Content-Type: application/json' \
   -d '{"text": "contains badword"}'
 ```
@@ -114,7 +116,7 @@ Response 200:
 Request:
 ```bash
 curl -X POST \
-  http://localhost:8000/moderate \
+  https://api-endpoint/moderate \
   -H 'Content-Type: application/json' \
   -d '{"text": "some unsafe content"}'
 ```
@@ -136,7 +138,7 @@ Response 200:
 Request:
 ```bash
 curl -X POST \
-  http://localhost:8000/moderate \
+  https://api-endpoint/moderate \
   -H 'Content-Type: application/json' \
   -d '{"text": "contains whitelist term"}'
 ```
@@ -158,7 +160,7 @@ Response 200:
 Request:
 ```bash
 curl -X POST \
-  http://localhost:8000/moderate \
+  https://api-endpoint/moderate \
   -H 'Content-Type: application/json' \
   -d '{"text": "Hello there!"}'
 ```
@@ -180,7 +182,7 @@ Response 200:
 Request:
 ```bash
 curl -X POST \
-  http://localhost:8000/moderate \
+  https://api-endpoint/moderate \
   -H 'Content-Type: application/json' \
   -d '{"text": "   "}'
 ```
