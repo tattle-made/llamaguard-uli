@@ -1,6 +1,4 @@
 # Content Moderation API
-
-Base URL: `https://safety.tattle.co.in/`
 Version: `0.0.1`
 
 ---
