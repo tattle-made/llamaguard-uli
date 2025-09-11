@@ -3,6 +3,7 @@ import re
 import time
 from pathlib import Path
 from typing import List, Optional, Set
+from enum import Enum
 
 from langchain_ollama import OllamaLLM
 from pydantic import BaseModel
@@ -15,11 +16,23 @@ class ModerationRequest(BaseModel):
     text: str
 
 
+class ModerationReason(str, Enum):
+    SLUR_LIST = "tattle_slur_list"
+    FLAG_LIST = "flag_list"
+    LLAMA_GUARD = "llama_guard"
+    SAFE = "safe"
+
+
+class ModerationMeta(BaseModel):
+    response_time: float
+    flagged_words: List[str]
+
+
 class ModerationResponse(BaseModel):
+    meta: ModerationMeta
     should_moderate: bool
-    reason: Optional[str] = None
-    flagged_words: Optional[List[str]] = None
-    processing_time_ms: float
+    reason: Optional[ModerationReason] = None
+    status_code: int
 
 
 class ContentModerationService:
@@ -123,46 +136,61 @@ class ContentModerationService:
 
         if not text or not text.strip():
             return {
+                "meta": {
+                    "response_time": (time.time() - start_time) * 1000,
+                    "flagged_words": [],
+                },
                 "should_moderate": False,
-                "reason": "empty_input",
-                "flagged_words": [],
-                "processing_time_ms": (time.time() - start_time) * 1000,
+                "reason": None,
+                "status_code": 400,
             }
 
         # Step 1: Check slur list
         is_slur_flagged, slur_words = self._check_slur_list(text)
         if is_slur_flagged:
             return {
+                "meta": {
+                    "response_time": (time.time() - start_time) * 1000,
+                    "flagged_words": slur_words,
+                },
                 "should_moderate": True,
-                "reason": "flagged_by_slur_list",
-                "flagged_words": slur_words,
-                "processing_time_ms": (time.time() - start_time) * 1000,
+                "reason": ModerationReason.SLUR_LIST,
+                "status_code": 200,
             }
 
         # Step 2: Check with Llama Guard
         is_llama_unsafe, llama_response = self._check_llama_guard(text)
         if is_llama_unsafe:
             return {
+                "meta": {
+                    "response_time": (time.time() - start_time) * 1000,
+                    "flagged_words": [],
+                },
                 "should_moderate": True,
-                "reason": "flagged_by_llama_guard",
-                "flagged_words": [],
-                "processing_time_ms": (time.time() - start_time) * 1000,
+                "reason": ModerationReason.LLAMA_GUARD,
+                "status_code": 200,
             }
 
         # Step 3: Check flagged list (override to safe)
         has_flagged_words, flagged_matches = self._check_flagged_list(text)
         if has_flagged_words:
             return {
-                "should_moderate": False,  # Override to safe
-                "reason": "flagged_list_match",
-                "flagged_words": flagged_matches,
-                "processing_time_ms": (time.time() - start_time) * 1000,
+                "meta": {
+                    "response_time": (time.time() - start_time) * 1000,
+                    "flagged_words": flagged_matches,
+                },
+                "should_moderate": False,
+                "reason": ModerationReason.FLAG_LIST,
+                "status_code": 200,
             }
 
         # If none of the above, content is safe
         return {
+            "meta": {
+                "response_time": (time.time() - start_time) * 1000,
+                "flagged_words": [],
+            },
             "should_moderate": False,
-            "reason": "content_safe",
-            "flagged_words": [],
-            "processing_time_ms": (time.time() - start_time) * 1000,
+            "reason": ModerationReason.SAFE,
+            "status_code": 200,
         }

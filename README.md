@@ -29,3 +29,10 @@ curl -X POST http://127.0.0.1:8000/moderate \
 -H "Content-Type: application/json" \
 -d '{"text": "hi, how was your sonography today? what did the doctor say?"}'
 ```
+6.
+
+```sh
+curl -X POST https://safety.tattle.co.in/moderate \
+-H "Content-Type: application/json" \
+-d '{"text": "hi, how was your day today"}'
+```

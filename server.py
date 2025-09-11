@@ -1,7 +1,8 @@
 import logging
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 from service import ContentModerationService, ModerationRequest, ModerationResponse
 
@@ -15,7 +16,7 @@ moderation_service = ContentModerationService()
 
 @app.get("/")
 def read_root():
-    return {"message": "Content Moderation API", "version": "1.0.0"}
+    return {"message": "Content Moderation API", "version": "0.0.1"}
 
 
 @app.post("/moderate", response_model=ModerationResponse)
@@ -31,10 +32,19 @@ def moderate_content(request: ModerationRequest):
     """
     try:
         result = moderation_service.moderate_content(request.text)
-        return ModerationResponse(**result)
+        return JSONResponse(content=ModerationResponse(**result).model_dump(), status_code=result.get("status_code", 200))
     except Exception as e:
         logger.error(f"Error during moderation: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        error_body = ModerationResponse(
+            meta={
+                "response_time": 0.0,
+                "flagged_words": [],
+            },
+            should_moderate=False,
+            reason=None,
+            status_code=500,
+        ).model_dump()
+        return JSONResponse(content=error_body, status_code=500)
 
 
 if __name__ == "__main__":
