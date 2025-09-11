@@ -33,14 +33,16 @@ Responses are shaped consistently with a `meta` object, a `should_moderate` flag
     "response_time": 12.34,
     "flagged_words": ["string"]
   },
-  "should_moderate": true || false,
+  "should_moderate": true,
   "reason": "safe | tattle_slur_list | llama_guard | flag_list",
   "status_code": 200
 }
 ```
 
 Below we explain the Input and Output structures in detail
+
 ---
+## Input/Output Doc
 
 ### Request Schema
 
