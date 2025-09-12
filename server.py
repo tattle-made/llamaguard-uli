@@ -1,8 +1,9 @@
 import logging
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 
 from service import ContentModerationService, ModerationRequest, ModerationResponse
 
@@ -14,9 +15,21 @@ app = FastAPI(title="Content Moderation API", version="0.0.1")
 moderation_service = ContentModerationService()
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def read_root():
-    return {"message": "Content Moderation API", "version": "0.0.1"}
+    """Serve the content moderation UI"""
+    ui_file = Path("ui.html")
+    if ui_file.exists():
+        return ui_file.read_text(encoding="utf-8")
+    else:
+        return """
+        <html>
+            <body>
+                <h1>Content Moderation API</h1>
+                <p>UI file not found. Please ensure ui.html exists.</p>
+            </body>
+        </html>
+        """
 
 
 @app.post("/moderate", response_model=ModerationResponse)
