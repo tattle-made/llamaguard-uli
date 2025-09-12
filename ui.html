@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Moderation API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,8 +13,8 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Raleway', Arial, sans-serif;
+            background: #ffebcb;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -36,7 +37,7 @@
         }
         
         .header h1 {
-            color: #333;
+            color: #252653;
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
@@ -78,7 +79,8 @@
         }
         
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #70234B;
+            font-family: 'Raleway', Arial, sans-serif;
             color: white;
             border: none;
             padding: 15px 30px;
@@ -114,7 +116,7 @@
         }
         
         .progress-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #f3a444;
             height: 100%;
             width: 0%;
             transition: width 0.5s ease;
@@ -235,7 +237,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛡️ Content Moderation</h1>
+            <h1>🛡️ Tattle Safety API</h1>
             <p>Test the 3-step content moderation flow</p>
         </div>
         
@@ -359,7 +361,7 @@
             
             if (result.should_moderate) {
                 resultSection.className = 'result-section result-moderate';
-                resultTitle.textContent = '⚠️ Content Should Be Moderated';
+                resultTitle.textContent = 'Content Should Be Moderated';
                 resultDetails.innerHTML = `
                     <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
                     <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
@@ -367,7 +369,7 @@
                 `;
             } else {
                 resultSection.className = 'result-section result-safe';
-                resultTitle.textContent = '✅ Content Is Safe';
+                resultTitle.textContent = 'Content Is Safe';
                 resultDetails.innerHTML = `
                     <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
                     <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
