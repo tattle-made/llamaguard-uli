@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Moderation API</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Raleway', Arial, sans-serif;
+            background: #ffebcb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #252653;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #70234B;
+            font-family: 'Raleway', Arial, sans-serif;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: #f3a444;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #e1e5e9;
+            z-index: 1;
+        }
+        
+        .step.active::after {
+            background: #667eea;
+        }
+        
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e1e5e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active .step-icon {
+            background: #667eea;
+        }
+        
+        .step.completed .step-icon {
+            background: #28a745;
+        }
+        
+        .step.failed .step-icon {
+            background: #dc3545;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .step.active .step-label {
+            color: #667eea;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result-safe {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-moderate {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result-flag {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .result-details {
+            font-size: 14px;
+        }
+        
+        .flagged-words {
+            margin-top: 10px;
+        }
+        
+        .flagged-words span {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Tattle Safety API</h1>
+            <p>Test the 3-step content moderation flow</p>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="textInput">Enter text to moderate:</label>
+                <textarea id="textInput" placeholder="Type your text here..."></textarea>
+            </div>
+            <button class="btn" onclick="moderateContent()">Moderate Content</button>
+        </div>
+        
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="steps">
+                <div class="step" id="step1">
+                    <div class="step-icon">1</div>
+                    <div class="step-label">Slur List Check</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-icon">2</div>
+                    <div class="step-label">Llama Guard</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-icon">3</div>
+                    <div class="step-label">Flagged List</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-section" id="resultSection">
+            <div class="result-title" id="resultTitle"></div>
+            <div class="result-details" id="resultDetails"></div>
+            <div class="flagged-words" id="flaggedWords"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function moderateContent() {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to moderate.');
+                return;
+            }
+            
+            // Reset UI
+            resetUI();
+            
+            // Show progress
+            document.getElementById('progressSection').style.display = 'block';
+            
+            // Disable button
+            const btn = document.querySelector('.btn');
+            btn.disabled = true;
+            btn.textContent = 'Moderating...';
+            
+            try {
+                // Make API call first so we can reflect the actual step where it stopped
+                const response = await fetch('/moderate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                const result = await response.json();
+                // Update steps and progress according to result.reason
+                updateStepsFromResult(result);
+                showResult(result);
+                
+            } catch (error) {
+                showError('Failed to moderate content: ' + error.message);
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btn.textContent = 'Moderate Content';
+            }
+        }
+
+        function updateStepsFromResult(result) {
+            // Reset steps visual state first
+            ['step1', 'step2', 'step3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = 'step';
+            });
+
+            // Map reason to where the flow stopped/landed
+            const reason = result.reason;
+            if (reason === 'tattle_slur_list') {
+                // Failed on step 1
+                document.getElementById('step1').classList.add('failed');
+                updateProgress(33);
+                return;
+            }
+
+            // Step 1 completed
+            document.getElementById('step1').classList.add('completed');
+
+            if (reason === 'llama_guard') {
+                // Failed on step 2
+                document.getElementById('step2').classList.add('failed');
+                updateProgress(66);
+                return;
+            }
+
+            // Step 2 completed
+            document.getElementById('step2').classList.add('completed');
+
+            // Step 3 outcome: either flag_list (special) or safe (completed)
+            document.getElementById('step3').classList.add('completed');
+            updateProgress(100);
+        }
+        
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+        
+        function showResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+            const flaggedWords = document.getElementById('flaggedWords');
+            
+            resultSection.style.display = 'block';
+            
+            if (result.should_moderate) {
+                resultSection.className = 'result-section result-moderate';
+                resultTitle.textContent = 'Content Should Be Moderated';
+                resultDetails.innerHTML = `
+                    <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
+                    <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
+                    <strong>Status Code:</strong> ${result.status_code}
+                `;
+            } else {
+                if (result.reason === 'flag_list') {
+                    resultSection.className = 'result-section result-flag';
+                    resultTitle.textContent = 'Content detected in Flag List';
+                } else {
+                    resultSection.className = 'result-section result-safe';
+                    resultTitle.textContent = 'Content Is Safe';
+                }
+                resultDetails.innerHTML = `
+                    <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
+                    <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
+                    <strong>Status Code:</strong> ${result.status_code}
+                `;
+            }
+            
+            // Show flagged words if any
+            if (result.meta.flagged_words && result.meta.flagged_words.length > 0) {
+                flaggedWords.innerHTML = '<strong>Flagged Words:</strong> ' + 
+                    result.meta.flagged_words.map(word => `<span>${word}</span>`).join('');
+            } else {
+                flaggedWords.innerHTML = '';
+            }
+        }
+        
+        function showError(message) {
+            const resultSection = document.getElementById('resultSection');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultSection.style.display = 'block';
+            resultSection.className = 'result-section result-error';
+            resultTitle.textContent = '❌ Error';
+            resultDetails.textContent = message;
+        }
+        
+        function getReasonText(reason) {
+            const reasonMap = {
+                'tattle_slur_list': 'Matched Tattle\'s slur list',
+                'llama_guard': 'Flagged by Llama Guard model',
+                'flag_list': 'Matched flagged list (human review needed)',
+                'safe': 'Content assessed as safe',
+                null: 'Invalid input'
+            };
+            return reasonMap[reason] || reason;
+        }
+        
+        function resetUI() {
+            // Reset progress
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            
+            // Reset steps
+            ['step1', 'step2', 'step3'].forEach(id => {
+                const step = document.getElementById(id);
+                step.className = 'step';
+            });
+            
+            // Hide result
+            document.getElementById('resultSection').style.display = 'none';
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('textInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                moderateContent();
+            }
+        });
+    </script>
+</body>
+</html>
