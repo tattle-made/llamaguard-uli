@@ -210,6 +210,12 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
+
+        .result-flag {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
         
         .result-title {
             font-size: 1.2rem;
@@ -299,10 +305,7 @@
             btn.textContent = 'Moderating...';
             
             try {
-                // Simulate the 3-step process with visual feedback
-                await simulateModerationSteps();
-                
-                // Make API call
+                // Make API call first so we can reflect the actual step where it stopped
                 const response = await fetch('/moderate', {
                     method: 'POST',
                     headers: {
@@ -312,6 +315,8 @@
                 });
                 
                 const result = await response.json();
+                // Update steps and progress according to result.reason
+                updateStepsFromResult(result);
                 showResult(result);
                 
             } catch (error) {
@@ -322,29 +327,39 @@
                 btn.textContent = 'Moderate Content';
             }
         }
-        
-        async function simulateModerationSteps() {
-            const steps = [
-                { id: 'step1', label: 'Checking slur list...', duration: 800 },
-                { id: 'step2', label: 'Running Llama Guard...', duration: 1200 },
-                { id: 'step3', label: 'Checking flagged list...', duration: 600 }
-            ];
-            
-            for (let i = 0; i < steps.length; i++) {
-                const step = steps[i];
-                const stepElement = document.getElementById(step.id);
-                
-                // Activate current step
-                stepElement.classList.add('active');
-                updateProgress((i + 1) / steps.length * 100);
-                
-                // Wait for step duration
-                await new Promise(resolve => setTimeout(resolve, step.duration));
-                
-                // Mark as completed
-                stepElement.classList.remove('active');
-                stepElement.classList.add('completed');
+
+        function updateStepsFromResult(result) {
+            // Reset steps visual state first
+            ['step1', 'step2', 'step3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = 'step';
+            });
+
+            // Map reason to where the flow stopped/landed
+            const reason = result.reason;
+            if (reason === 'tattle_slur_list') {
+                // Failed on step 1
+                document.getElementById('step1').classList.add('failed');
+                updateProgress(33);
+                return;
             }
+
+            // Step 1 completed
+            document.getElementById('step1').classList.add('completed');
+
+            if (reason === 'llama_guard') {
+                // Failed on step 2
+                document.getElementById('step2').classList.add('failed');
+                updateProgress(66);
+                return;
+            }
+
+            // Step 2 completed
+            document.getElementById('step2').classList.add('completed');
+
+            // Step 3 outcome: either flag_list (special) or safe (completed)
+            document.getElementById('step3').classList.add('completed');
+            updateProgress(100);
         }
         
         function updateProgress(percentage) {
@@ -368,8 +383,13 @@
                     <strong>Status Code:</strong> ${result.status_code}
                 `;
             } else {
-                resultSection.className = 'result-section result-safe';
-                resultTitle.textContent = 'Content Is Safe';
+                if (result.reason === 'flag_list') {
+                    resultSection.className = 'result-section result-flag';
+                    resultTitle.textContent = 'Content detected in Flag List';
+                } else {
+                    resultSection.className = 'result-section result-safe';
+                    resultTitle.textContent = 'Content Is Safe';
+                }
                 resultDetails.innerHTML = `
                     <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
                     <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
