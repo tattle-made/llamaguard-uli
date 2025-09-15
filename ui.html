@@ -379,8 +379,6 @@
                 resultTitle.textContent = 'Content Should Be Moderated';
                 resultDetails.innerHTML = `
                     <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
-                    <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
-                    <strong>Status Code:</strong> ${result.status_code}
                 `;
             } else {
                 if (result.reason === 'flag_list') {
@@ -392,8 +390,6 @@
                 }
                 resultDetails.innerHTML = `
                     <strong>Reason:</strong> ${getReasonText(result.reason)}<br>
-                    <strong>Response Time:</strong> ${result.meta.response_time.toFixed(2)}ms<br>
-                    <strong>Status Code:</strong> ${result.status_code}
                 `;
             }
             
